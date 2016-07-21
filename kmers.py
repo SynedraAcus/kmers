@@ -110,6 +110,7 @@ class Composition(collections.abc.MutableMapping):
         Write a relative k-mer usage to a given filehandle
         '''
         fh.write('Pseudo\t{0}\n'.format(self.pseudocount))
+        fh.write('SCount\t{0}\n'.format(self.sequence_count))
         for j in self.keys():
             fh.write('{0}\t{1}\n'.format(j, self[j]))
 
@@ -125,6 +126,8 @@ class Composition(collections.abc.MutableMapping):
             if kmer == 'Pseudo':
                 self.pseudocount = float(fl)
                 continue
+            if kmer == 'SCount':
+                self.sequence_count = int(fl)
             self.log_distribution.update({kmer: float(fl)})
 
 def euclidean(a, b):
