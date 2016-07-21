@@ -67,7 +67,7 @@ class Composition(collections.abc.MutableMapping):
             self.log_distribution[j] = math.log10(self.abs_distribution[j]) - math.log10(self.kmer_count)
         #  Define a 'pseudocount' value: for k-mers that were not present in a traning set the log
         #  probability should be the same as for k-mers that were present exactly once
-        self.pseudocount = math.log10(1/self.kmer_count)
+        self.pseudocount = 0 - math.log10(self.kmer_count)
 
     def distribution(self, sequence):
         '''
@@ -93,16 +93,13 @@ class Composition(collections.abc.MutableMapping):
         :param seq: Bio.SeqRecord
         :return:
         """
-        getcontext().prec = 500
         p = 0
         s = str(sequence.seq)
         for j in range(len(s) - self.k):
             try:
                 pr = self.log_distribution[s[j:j+self.k]]
             except KeyError:
-                # pr = 1
                 pr = self.pseudocount
-            # p *= pr
             p += pr
         return p
 
@@ -110,6 +107,7 @@ class Composition(collections.abc.MutableMapping):
         '''
         Write a relative k-mer usage to a given filehandle
         '''
+        fh.write('Pseudo\t{0}'.format(self.pseudocount))
         for j in self.keys():
             fh.write('{0}\t{1}\n'.format(j, self[j]))
 
@@ -122,6 +120,9 @@ class Composition(collections.abc.MutableMapping):
         getcontext().prec = 100
         for line in fh:
             kmer, fl = line.split(sep='\t')
+            if kmer == 'Pseudo':
+                self.pseudocount = float(fl)
+                continue
             self.log_distribution.update({kmer: float(fl)})
 
 def euclidean(a, b):
