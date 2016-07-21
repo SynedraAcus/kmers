@@ -16,6 +16,7 @@ class Composition(collections.abc.MutableMapping):
         """
         self.k = k
         self.kmer_count = 0
+        self.sequence_count = 0
         self.abs_distribution = {}
         self.log_distribution = {}
         if seq:
@@ -54,6 +55,7 @@ class Composition(collections.abc.MutableMapping):
                 self.abs_distribution[s[j:j+self.k]] += 1
             except KeyError:
                 self.abs_distribution.update({s[j:j+self.k]: 1})
+        self.sequence_count += 1
         if update:
             self.update_relative()
 
