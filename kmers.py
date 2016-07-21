@@ -107,7 +107,7 @@ class Composition(collections.abc.MutableMapping):
         '''
         Write a relative k-mer usage to a given filehandle
         '''
-        fh.write('Pseudo\t{0}'.format(self.pseudocount))
+        fh.write('Pseudo\t{0}\n'.format(self.pseudocount))
         for j in self.keys():
             fh.write('{0}\t{1}\n'.format(j, self[j]))
 
