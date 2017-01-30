@@ -4,6 +4,7 @@ import collections.abc
 from decimal import *
 from Bio.SeqRecord import  SeqRecord
 
+
 class Composition(collections.abc.MutableMapping):
     '''
     A class for aminoacid k-mer composition of a sequence or a sequence set. May be created with a single sequence
@@ -175,6 +176,7 @@ def ffp_distance(a, b):
     for j in set(a.keys()).intersection(set(b.keys())):
         avg_model.relative_distribution[j] = (a.relative_distribution[j]+b.relative_distribution[j])/2
     return kullback_leibler(a, avg_model)/2 + kullback_leibler(b, avg_model)/2
+
 
 def kullback_leibler(d, e):
     '''

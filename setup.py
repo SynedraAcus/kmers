@@ -14,7 +14,7 @@ setup(name='kmers',
       author='A.A. Morozov', author_email='morozov@lin.irk.ru',
       license='MIT',
       classifiers=[
-            'Development Status :: 5 Production/Stable',
+            'Development Status :: 5 - Production/Stable',
             'Intended Audience :: Science/Research',
             'Intended Audience :: Education',
             'License :: OSI Approved :: MIT License',
