@@ -9,7 +9,7 @@ class Composition(collections.abc.MutableMapping):
     A class for aminoacid k-mer composition of a sequence or a sequence set. May be created with a single sequence
     or none (in latter case use Composition.process(SeqRecord)).
     '''
-    def __init__(self, k, seq = None, fh = None):
+    def __init__(self, k, seq=None, fh=None):
         """
         :param seq: SeqRecord
         :param k: int
@@ -144,6 +144,7 @@ class Composition(collections.abc.MutableMapping):
                 self.sequence_count = int(fl)
             self.log_distribution.update({kmer: float(fl)})
 
+
 def euclidean(a, b):
     '''
     Count euclidean distances between two kmer distribution dicts
@@ -159,6 +160,7 @@ def euclidean(a, b):
         n += (aj - bj)**2
     return n.sqrt()
 
+
 def ffp_distance(a, b):
     '''
     Calculate "Feature frequency profile" distance, as per Sims, Se-Ran Jun, Wu, Kim 2008 and protein variants thereof
@@ -172,11 +174,6 @@ def ffp_distance(a, b):
     avg_model = Composition(a.k)
     for j in set(a.keys()).intersection(set(b.keys())):
         avg_model.relative_distribution[j] = (a.relative_distribution[j]+b.relative_distribution[j])/2
-    #     try:
-    #         avg_model.abs_distribution[j] = (a.abs_distribution[j]+b.abs_distribution[j])
-    #     except KeyError:
-    #         pass
-    # avg_model.update_relative()
     return kullback_leibler(a, avg_model)/2 + kullback_leibler(b, avg_model)/2
 
 def kullback_leibler(d, e):

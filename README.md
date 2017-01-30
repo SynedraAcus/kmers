@@ -1,16 +1,23 @@
 # kmers.py
 
-A pure Python proof-of-concept protein classifier.
+A pure Python *k*-mer analysis library.
+This library is agnostic to a type of sequences used and treats them
+internally as strings.
 
 ## Usage
 
 ### Generating *k*-mer distributions
 
-First, create an empty Composition object, supplying the value of k.
+First, create a Composition object, supplying the value of k.
+Initial data can be supplied either through `seq` (see self.process) or
+`fh`, which accepts a file-like object and reads the composition data
+from a file. If both are omitted, an empty Composition object is
+created.
 
-    composition = kmers.Composition(k=3)
+    composition = kmers.Composition(k=3, seq=None, fh=None)
 
-Now, it's time to load some data. You can add either a single SeqRecord object or an iterable of them.
+Data can be added to an existing model later. You can add either a
+single SeqRecord object or an iterable of SeqRecords.
 If your code intents to call this method many times, it's preferable to set `update=False` to avoid costly
 recomputation of log distribution after every call.
 
