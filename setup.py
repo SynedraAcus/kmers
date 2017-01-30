@@ -19,7 +19,7 @@ setup(name='kmers',
             'Intended Audience :: Education',
             'License :: OSI Approved :: MIT License',
             'Natural Language :: English',
-            'Operating system :: OS Independent'
+            'Operating System :: OS Independent',
             #  Why do I even have to write it manually?
             'Programming Language :: Python',
             'Programming Language :: Python :: 3',
@@ -29,5 +29,5 @@ setup(name='kmers',
             'Topic :: Scientific/Engineering :: Bio-Informatics'],
       keywords='bioinformatics kmers classification',
       packages=find_packages(),
-      install_requires=['biopython'] # The rest are standart library
+      install_requires=['biopython']
       )
