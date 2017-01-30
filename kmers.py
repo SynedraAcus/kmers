@@ -2,6 +2,7 @@ __author__ = 'morozov'
 import math
 import collections.abc
 from decimal import *
+from Bio.SeqRecord import  SeqRecord
 
 class Composition(collections.abc.MutableMapping):
     '''
@@ -42,20 +43,33 @@ class Composition(collections.abc.MutableMapping):
     def __len__(self):
         pass
 
-    def process(self, sequence, update=True):
-        '''
-        Add a sequence statistic to this composition object
-        :param seq:
-        :return:
-        '''
+    def process_single_sequence(self, sequence):
+        """Add statistics of a single sequence to this Composition"""
+        if not isinstance(sequence, SeqRecord):
+            raise ValueError('Only SeqRecord objects can be added to Composition')
         s = str(sequence.seq)
-        for j in range(len(s)-self.k):
+        for j in range(len(s) - self.k):
             self.kmer_count += 1
             try:
-                self.abs_distribution[s[j:j+self.k]] += 1
+                self.abs_distribution[s[j:j + self.k]] += 1
             except KeyError:
-                self.abs_distribution.update({s[j:j+self.k]: 1})
+                self.abs_distribution.update({s[j:j + self.k]: 1})
         self.sequence_count += 1
+
+    def process(self, item, update=True):
+        '''
+        Add a sequence statistic to this composition object.
+        :param seq: SeqRecord or an iterable of SeqRecords
+        :return:
+        '''
+        if isinstance(item, SeqRecord):
+            self.process_single_sequence(item)
+        elif isinstance(item, list) or isinstance(item, tuple):
+            for single_item in item:
+                # Even if we accidentrally start iterating over SeqRecord-like
+                # object (say, Seq), it returns `str` for every letter, thus
+                # raising exception in process_single_sequence()
+                self.process_single_sequence(single_item)
         if update:
             self.update_relative()
 
