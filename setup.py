@@ -12,5 +12,5 @@ setup(name='kmers',
       long_description='Calculating k-mer distributions of (sets of) sequences, classifying sequences and calculating distances',
       url='https://github.com/synedraacus/kmers',
       author='A.A. Morozov', author_email='morozov@lin.irk.ru',
-      license=''
+      license='MIT'
       )

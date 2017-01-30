@@ -42,6 +42,6 @@ feature frequency profile (Sims et al. 2008) distance metrics are supported.
     f = kmers.ffp_distance(comp_a, comp_b)
 
 ## License
-This code is distributed under the terms of CC-BY-3.0 license.
+This code is distributed under the terms of MIT license.
 Unrestricted use or modification of library is allowed provided that original author (A. A. Morozov) is properly cited.
 If used in scientific publication, please also cite my abstract from BGRS/SB-2016.
