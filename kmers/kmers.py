@@ -4,6 +4,50 @@ from decimal import *
 from Bio.SeqRecord import SeqRecord
 
 
+class LazyDict(dict):
+    """
+    A dictionary that can calculate its values lazily
+    This class behaves like a regular dictionary with the only exception:
+    its values can be recomputed when they are asked for. This is controlled by
+    two parameters:
+    `self.recompute` is a function that is used whenever values need to be found
+    It should be a one-argument function that accepts a key and returns a value.
+    It is the duty of user to make sure all object(s) referenced in this
+    function do still exist when self.recompute is called. Most likely use case
+    is a lambda that refers to some external object(s).
+    `self.values_fresh` is a boolean attribute that is True if values currently
+    in dict are useful and to False if they are not. Initially set to False and
+    changed to True on every recalculation of values, this attribute needs to be
+    manually changed to False by caller whenever there is a reason to think that
+    values are getting out of date.
+
+    """
+    def __init__(self, recompute=None, *args, **kwargs):
+        super(self, LazyDict).__init__(*args, **kwargs)
+        if not hasattr(recompute, '__call__'):
+            raise ValueError('Only callables accepted as recompute')
+        self.recompute = recompute
+        self.values_fresh = False
+        self._dict = {}
+
+    def __getitem__(self, item):
+        if self.values_fresh:
+            return self._dict[item]
+        else:
+            self.update_values()
+            return self._dict[item]
+
+    def __setitem__(self, key, value):
+        self._dict[key] = value
+
+    def _update_values(self):
+        """Build new values.
+        Old ones are discarded. Not meant to be called explicitly"""
+        for x in self._dict.keys():
+            self._dict[x] = self.recompute(x)
+
+
+
 class Composition(collections.abc.MutableMapping):
     '''
     A class for aminoacid k-mer composition of a sequence or a sequence set.
