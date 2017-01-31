@@ -1,8 +1,12 @@
 # kmers.py
 
-A pure Python *k*-mer analysis library.
+A pure Python3 *k*-mer analysis library.
 This library is agnostic to a type of sequences used and treats them
 internally as strings.
+## Installation
+Python2 is not supported. For python3 it's best to use PyPI.
+
+    pip3 install kmers
 
 ## Usage
 
@@ -14,6 +18,7 @@ Initial data can be supplied either through `seq` (see self.process) or
 from a file. If both are omitted, an empty Composition object is
 created.
 
+    import kmers.kmers as kmers
     composition = kmers.Composition(k=3, seq=None, fh=None)
 
 Data can be added to an existing model later. You can add either a

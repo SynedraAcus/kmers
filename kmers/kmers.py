@@ -1,14 +1,14 @@
-__author__ = 'morozov'
 import math
 import collections.abc
 from decimal import *
-from Bio.SeqRecord import  SeqRecord
+from Bio.SeqRecord import SeqRecord
 
 
 class Composition(collections.abc.MutableMapping):
     '''
-    A class for aminoacid k-mer composition of a sequence or a sequence set. May be created with a single sequence
-    or none (in latter case use Composition.process(SeqRecord)).
+    A class for aminoacid k-mer composition of a sequence or a sequence set.
+    May be initialized with a single sequence, sequence iterable, file-like object
+    or nothing (in latter case use Composition.process(SeqRecord)).
     '''
     def __init__(self, k, seq=None, fh=None):
         """
@@ -60,7 +60,8 @@ class Composition(collections.abc.MutableMapping):
     def process(self, item, update=True):
         '''
         Add a sequence statistic to this composition object.
-        :param seq: SeqRecord or an iterable of SeqRecords
+        :param item: SeqRecord or an iterable of SeqRecords
+        :param update: Boolean
         :return:
         '''
         if isinstance(item, SeqRecord):
