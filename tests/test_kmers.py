@@ -20,9 +20,10 @@ def test_lazy_dict_recompute_on_use():
     expect = {0: 4, 1: 6, 2: 8}
     assert ld == expect
 
+
 def test_recompute_on_indirect_use():
     # Recompute if __eq__, keys() or values() is called
-    source = [1,2,3]
+    source = [1, 2, 3]
     ld = LazyDict(recompute=lambda x: source[x]*2,
                   keys_source=lambda: range(len(source)))
     assert sorted(list(ld.keys())) == [0, 1, 2]
