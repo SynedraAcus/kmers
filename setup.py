@@ -7,7 +7,7 @@ and https://packaging.python.org/distributing
 from setuptools import setup, find_packages
 
 setup(name='kmers',
-      version='0.1.0',
+      version='0.2.0',
       description='Bioinformatic k-mer analysis',
       long_description='Calculating k-mer distributions of (sets of) sequences, classifying sequences and calculating distances',
       url='https://github.com/synedraacus/kmers',
