@@ -95,8 +95,13 @@ class Composition(collections.abc.MutableMapping):
     '''
     def __init__(self, k, seq=None, fh=None):
         """
-        :param seq: SeqRecord
-        :param k: int
+        Create a new composition
+        :param k: int. Length of k-mer. This parameter is obligatory and cannot
+        be changed for an exisiting model.
+        :param seq: SeqRecord. If not None, this sequence will be used to build
+        a model.
+        :param fh: a filehandle or file-like IO stream. If not None, model will
+        be read from this file.
         :return:
         """
         self.k = k
@@ -111,7 +116,6 @@ class Composition(collections.abc.MutableMapping):
             self.process(seq)
         if fh:
             self.read(fh)
-        self.pseudocount = None
 
     def __getitem__(self, item):
         return self.log_distribution[item]
@@ -148,7 +152,7 @@ class Composition(collections.abc.MutableMapping):
         self.log_distribution.values_fresh = False
         self.relative_distribution.values_fresh = False
 
-    def process(self, item, update=True):
+    def process(self, item):
         '''
         Add a sequence statistic to this composition object.
         :param item: SeqRecord or an iterable of SeqRecords
@@ -160,18 +164,6 @@ class Composition(collections.abc.MutableMapping):
         elif isinstance(item, list) or isinstance(item, tuple):
             for single_item in item:
                 self.process_single_sequence(single_item)
-
-    # def update_relative(self):
-    #     '''
-    #     Update self.relative_distribution to be in accord with abs distribution
-    #     :return:
-    #     '''
-    #     getcontext().prec = 100
-    #     for j in self.abs_distribution.keys():
-    #         self.log_distribution[j] = math.log10(self.abs_distribution[j]) - math.log10(self.kmer_count)
-    #     #  Define a 'pseudocount' value: for k-mers that were not present in a traning set the log
-    #     #  probability should be the same as for k-mers that were present exactly once
-    #     self.pseudocount = 0 - math.log10(self.kmer_count)
 
     def distribution(self, sequence):
         '''
@@ -197,20 +189,22 @@ class Composition(collections.abc.MutableMapping):
         :param seq: Bio.SeqRecord
         :return:
         """
+        pseudocount = math.log10(1/self.kmer_count)
         p = 0
         s = str(sequence.seq)
         for j in range(len(s) - self.k):
             try:
                 pr = self.log_distribution[s[j:j+self.k]]
             except KeyError:
-                pr = self.pseudocount
+                pr = pseudocount
             p += pr
         return p
 
     def write(self, fh):
         '''
-        Write a relative k-mer usage to a given filehandle
+        Write an absolute k-mer distribution to a given filehandle.
         '''
+        pseudocount = math.log10(1 / self.kmer_count)
         fh.write('Pseudo\t{0}\n'.format(self.pseudocount))
         fh.write('SCount\t{0}\n'.format(self.sequence_count))
         for j in self.keys():
@@ -218,19 +212,27 @@ class Composition(collections.abc.MutableMapping):
 
     def read(self, fh):
         """
-        Read a model from a filehandle. Throw an error if a filehandle contains a model declared for a different k
+        Read a model from a filehandle.
+        Throws an error if a filehandle contains a model declared for a different k
         :param fh:
         :return:
         """
         getcontext().prec = 100
+        model = {}
+        checked_len = False
         for line in fh:
             kmer, fl = line.split(sep='\t')
             if kmer == 'Pseudo':
                 self.pseudocount = float(fl)
                 continue
-            if kmer == 'SCount':
+            elif kmer == 'SCount':
                 self.sequence_count = int(fl)
-            self.log_distribution.update({kmer: float(fl)})
+            elif not checked_len:
+                checked_len = True
+                if len(kmer) != self.k:
+                    raise ValueError(
+                        'Model and file are using a different kmer length!')
+            model[kmer] = fl
 
 
 def euclidean(a, b):
