@@ -36,16 +36,33 @@ def test_recompute_on_indirect_use():
     assert ld == expect
 
 #  Tests for Composition and distances
-from kmers.kmers import Composition
+from kmers.kmers import Composition, euclidean, ffp_distance
 from Bio.SeqRecord import SeqRecord
+
 
 def test_relative():
     record = SeqRecord(seq='ACACAT')
     compo = Composition(k=3, seq=record)
     assert compo.relative_distribution == {'ACA': 0.5, 'CAC': 0.25, 'CAT': 0.25}
 
+
 def test_log():
     record = SeqRecord(seq='AAAAA')
     compo = Composition(k=3, seq=record)
     # No more complex tests b/c rounding logarithms is a pain in the ass
     assert compo.log_distribution == {'AAA': 0}
+
+
+def test_similars():
+    # Zero distance between sequences of similar k-mer composition
+    a = SeqRecord(seq='ACAC')
+    b = SeqRecord(seq='CACA')
+    assert euclidean(Composition(seq=a, k=3), Composition(seq=b, k=3)) == 0
+    assert ffp_distance(Composition(seq=a, k=3), Composition(seq=b, k=3)) == 0
+
+def test_distances():
+    a = Composition(3, SeqRecord(seq='ACTGACTG'))
+    b = Composition(3, SeqRecord(seq='CTGACTGA'))
+    #  Let's forget small rounding errors for a while
+    assert 0.235 < euclidean(a, b) < 0.236
+    assert 0.040 < ffp_distance(a,b) < 0.041

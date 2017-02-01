@@ -1,6 +1,6 @@
 import math
 import collections.abc
-from decimal import *
+from decimal import Decimal, getcontext
 from Bio.SeqRecord import SeqRecord
 
 
@@ -257,41 +257,43 @@ def euclidean(a, b):
     '''
     getcontext().prec = 500
     n = Decimal(0)
-    for j in set(a.keys()).union(set(b.keys())):
-        aj = a.get(j, 0)
-        bj = b.get(j, 0)
-        n += (aj - bj)**2
+    for j in set(a.keys()).intersection(set(b.keys())):
+        aj = a.relative_distribution[j]
+        bj = b.relative_distribution[j]
+        n += Decimal((aj - bj)**2)
     return n.sqrt()
 
 
 def ffp_distance(a, b):
     '''
-    Calculate "Feature frequency profile" distance, as per Sims, Se-Ran Jun, Wu, Kim 2008 and protein variants thereof
-    Important note: k-mer length is fixed, unlike in described papers, where they derive it for every dataset
+    Calculate Jensen-Shannon divergence.
+    Sims, Se-Ran Jun, Wu, Kim 2008 "Alignment-free genome comparison with
+    feature frequency profiles and optimal resolutions" have shown it to be a
+    viable distance estimator (although it's still not a metric), hence the name
     :param a: Composition
     :param b: Composition
     :return: float
     '''
     if not (a.k == b.k):
         raise ValueError('Comparison possible only for models with the same k-mer length')
-    avg_model = Composition(a.k)
+    avg_model = {}
+    # Not sure if these midpoint calculations are strictly correct, but at the
+    # very least they seem to produce reasonable result
     for j in set(a.keys()).intersection(set(b.keys())):
-        avg_model.relative_distribution[j] = (a.relative_distribution[j]+b.relative_distribution[j])/2
-    return kullback_leibler(a, avg_model)/2 + kullback_leibler(b, avg_model)/2
+        avg_model[j] = (a.relative_distribution[j]+b.relative_distribution[j])/2
+    return kullback_leibler(a.relative_distribution, avg_model)/2 +\
+           kullback_leibler(b.relative_distribution, avg_model)/2
 
 
 def kullback_leibler(d, e):
     '''
     Calculate kullback-Leibler divergence on a pair of compositions.
-    :param d:
-    :param e:
+    :param d: dict
+    :param e: dict
     :return:
     '''
     kl = Decimal(0.0)
-    for j in set(d.keys()).union(set(e.keys())):
-        try:
-            kl_local = d.relative_distribution[j]*Decimal(math.log2(d.relative_distribution[j]) - math.log2(e.relative_distribution[j]))
-            kl += kl_local
-        except KeyError:
-            pass
+    for j in set(d.keys()).intersection(set(e.keys())):
+        kl_local = Decimal(d[j]) * (Decimal(math.log2(d[j])) - Decimal(math.log2(e[j])))
+        kl += kl_local
     return float(kl)
