@@ -35,7 +35,7 @@ def test_recompute_on_indirect_use():
     ld.values_fresh = False
     assert ld == expect
 
-#  Tests for Composition
+#  Tests for Composition and distances
 from kmers.kmers import Composition
 from Bio.SeqRecord import SeqRecord
 

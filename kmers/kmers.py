@@ -120,6 +120,9 @@ class Composition(collections.abc.MutableMapping):
         raise NotImplementedError('Manually adding values not supported')
         pass
 
+    def keys(self):
+        return self.abs_distribution.keys()
+
     def __delitem__(self, key):
         raise NotImplementedError('Element deletion not supported')
         pass
@@ -142,6 +145,8 @@ class Composition(collections.abc.MutableMapping):
             except KeyError:
                 self.abs_distribution.update({s[j:j + self.k]: 1})
         self.sequence_count += 1
+        self.log_distribution.values_fresh = False
+        self.relative_distribution.values_fresh = False
 
     def process(self, item, update=True):
         '''
@@ -154,24 +159,19 @@ class Composition(collections.abc.MutableMapping):
             self.process_single_sequence(item)
         elif isinstance(item, list) or isinstance(item, tuple):
             for single_item in item:
-                # Even if we accidentrally start iterating over SeqRecord-like
-                # object (say, Seq), it returns `str` for every letter, thus
-                # raising exception in process_single_sequence()
                 self.process_single_sequence(single_item)
-        if update:
-            self.update_relative()
 
-    def update_relative(self):
-        '''
-        Update self.relative_distribution to be in accord with abs distribution
-        :return:
-        '''
-        getcontext().prec = 100
-        for j in self.abs_distribution.keys():
-            self.log_distribution[j] = math.log10(self.abs_distribution[j]) - math.log10(self.kmer_count)
-        #  Define a 'pseudocount' value: for k-mers that were not present in a traning set the log
-        #  probability should be the same as for k-mers that were present exactly once
-        self.pseudocount = 0 - math.log10(self.kmer_count)
+    # def update_relative(self):
+    #     '''
+    #     Update self.relative_distribution to be in accord with abs distribution
+    #     :return:
+    #     '''
+    #     getcontext().prec = 100
+    #     for j in self.abs_distribution.keys():
+    #         self.log_distribution[j] = math.log10(self.abs_distribution[j]) - math.log10(self.kmer_count)
+    #     #  Define a 'pseudocount' value: for k-mers that were not present in a traning set the log
+    #     #  probability should be the same as for k-mers that were present exactly once
+    #     self.pseudocount = 0 - math.log10(self.kmer_count)
 
     def distribution(self, sequence):
         '''
