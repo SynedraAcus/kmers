@@ -1,12 +1,12 @@
 import math
-import collections.abc
+import collections, collections.abc
 from decimal import *
 from Bio.SeqRecord import SeqRecord
 
 
-class LazyDict(dict):
+class LazyDict(collections.MutableMapping):
     """
-    A dictionary that can calculate its values lazily
+    A dictionary that can calculate its values lazily.
     This class behaves like a regular dictionary with the only exception:
     its values can be recomputed when they are asked for. This is controlled by
     two parameters:
@@ -22,11 +22,14 @@ class LazyDict(dict):
     values are getting out of date.
 
     """
-    def __init__(self, recompute=None, *args, **kwargs):
-        super(self, LazyDict).__init__(*args, **kwargs)
+    def __init__(self, keys_source=None, recompute=None, *args, **kwargs):
+        super(LazyDict, self).__init__(*args, **kwargs)
         if not hasattr(recompute, '__call__'):
             raise ValueError('Only callables accepted as recompute')
         self.recompute = recompute
+        if not hasattr(keys_source, '__call__'):
+            raise ValueError('Only callables accepted as keys_source')
+        self.keys_source = keys_source
         self.values_fresh = False
         self._dict = {}
 
@@ -34,18 +37,54 @@ class LazyDict(dict):
         if self.values_fresh:
             return self._dict[item]
         else:
-            self.update_values()
+            self._update_values()
             return self._dict[item]
 
     def __setitem__(self, key, value):
         self._dict[key] = value
 
-    def _update_values(self):
-        """Build new values.
-        Old ones are discarded. Not meant to be called explicitly"""
-        for x in self._dict.keys():
-            self._dict[x] = self.recompute(x)
+    def __delitem__(self, key):
+        self._dict.__delitem__(key)
 
+    def __iter__(self):
+        return self._dict.__iter__()
+
+    def __len__(self):
+        return len(self._dict)
+
+    def keys(self):
+        if not self.values_fresh:
+            self._update_values()
+        return self._dict.keys()
+
+    def values(self):
+        if not self.values_fresh:
+            self._update_values()
+        return self._dict.values()
+
+    def __eq__(self, other):
+        if not self.values_fresh:
+            self._update_values()
+        if not isinstance(other, (dict, LazyDict)):
+            raise ValueError(
+                'LazyDict can be compared only with other LazyDict or dict')
+        if sorted(list(self.keys())) == sorted(list(other.keys())):
+            for x in self.keys():
+                if other[x] != self[x]:
+                    # Different value
+                    return False
+        else:
+            # Different keys
+            return False
+        return True
+
+    def _update_values(self):
+        """Build new values. Not meant to be called explicitly"""
+        k = self.keys_source()
+        self._dict = {x: self.recompute(x) for x in k}
+        self.values_fresh = True
+        # for x in self._dict.keys():
+        #     self._dict[x] = self.recompute(x)
 
 
 class Composition(collections.abc.MutableMapping):
