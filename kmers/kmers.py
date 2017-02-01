@@ -103,7 +103,10 @@ class Composition(collections.abc.MutableMapping):
         self.kmer_count = 0
         self.sequence_count = 0
         self.abs_distribution = {}
-        self.log_distribution = {}
+        self.log_distribution = LazyDict(keys_source=lambda: self.keys(),
+              recompute=lambda x: math.log10(self.abs_distribution[x]) - math.log10(self.kmer_count))
+        self.relative_distribution = LazyDict(keys_source=lambda: self.keys(),
+              recompute=lambda x: self.abs_distribution[x]/self.kmer_count)
         if seq:
             self.process(seq)
         if fh:
@@ -132,7 +135,7 @@ class Composition(collections.abc.MutableMapping):
         if not isinstance(sequence, SeqRecord):
             raise ValueError('Only SeqRecord objects can be added to Composition')
         s = str(sequence.seq)
-        for j in range(len(s) - self.k):
+        for j in range(len(s) - self.k+1):
             self.kmer_count += 1
             try:
                 self.abs_distribution[s[j:j + self.k]] += 1

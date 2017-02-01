@@ -34,3 +34,18 @@ def test_recompute_on_indirect_use():
     expect = {0: 2, 1: 4, 2: 6, 3: 2, 4: 2}
     ld.values_fresh = False
     assert ld == expect
+
+#  Tests for Composition
+from kmers.kmers import Composition
+from Bio.SeqRecord import SeqRecord
+
+def test_relative():
+    record = SeqRecord(seq='ACACAT')
+    compo = Composition(k=3, seq=record)
+    assert compo.relative_distribution == {'ACA': 0.5, 'CAC': 0.25, 'CAT': 0.25}
+
+def test_log():
+    record = SeqRecord(seq='AAAAA')
+    compo = Composition(k=3, seq=record)
+    # No more complex tests b/c rounding logarithms is a pain in the ass
+    assert compo.log_distribution == {'AAA': 0}
